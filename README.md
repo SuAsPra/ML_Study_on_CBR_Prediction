@@ -1,8 +1,34 @@
-# CBR Prediction of Sand/Soil Using Machine Learning
+# CBR Prediction Using Machine Learning
 
-This project is a complete machine learning study for estimating the California Bearing Ratio (CBR) of soil using commonly available geotechnical index properties. The final trained model is deployed through a Python backend and a React frontend application, where the user enters known laboratory values and receives an estimated CBR value, an expected prediction range, and SHAP-based feature influence.
+A complete machine learning study for estimating the **California Bearing Ratio (CBR)** of soil from commonly available geotechnical index properties.
 
-The final deployed model is focused on cohesive soils because the available dataset showed that cohesive soil records were large enough and consistent enough to produce a reliable model. The app can still accept UCSCS text for warning logic, but the scientific model scope is cohesive soil behavior.
+The project includes:
+
+- Full dataset cleaning and preprocessing workflow
+- Exploratory data analysis with figures
+- Linear Regression, Random Forest, and XGBoost comparison
+- Cross-validation and soil-type-specific modeling
+- Feature engineering and residual-based refinement
+- Final saved XGBoost model
+- React frontend with Python backend API
+- SHAP-based prediction explanation
+
+The final deployed model is focused on **cohesive soils** because the available cohesive-soil records were large enough and consistent enough to produce a reliable model.
+
+## Contents
+
+- [Quick Run](#quick-run)
+- [Project Objective](#project-objective)
+- [Repository Structure](#repository-structure)
+- [Environment Setup](#environment-setup)
+- [Theory](#theory)
+- [Dataset Cleaning and Preparation](#dataset-cleaning-and-preparation)
+- [Model Development](#model-development)
+- [Missing Data Strategy](#missing-data-strategy)
+- [Soil-Type-Specific Modeling](#soil-type-specific-modeling)
+- [Final Model Result](#final-model-result)
+- [Frontend and Backend App](#frontend-and-backend-app)
+- [Important Scientific Notes](#important-scientific-notes)
 
 ## Project Objective
 
