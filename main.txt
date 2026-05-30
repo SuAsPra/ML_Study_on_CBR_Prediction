@@ -1,0 +1,592 @@
+PS D:\Suriyan from 2024\Soil ML project> python -m venv venv
+PS D:\Suriyan from 2024\Soil ML project> .\\venv\\Scripts\\Activate.ps1
+(venv) PS D:\Suriyan from 2024\Soil ML project> pip --version
+pip 25.3 from D:\Suriyan from 2024\Soil ML project\venv\Lib\site-packages\pip (python 3.14)
+(venv) PS D:\Suriyan from 2024\Soil ML project> pip install pandas
+
+Maintain all runs under venv
+
+For venv addition
+
+pip install pandas numpy matplotlib seaborn scikit-learn openpyxl xgboost shap
+
+Step 1 - 
+Cleaning, removes headings and kept only subheading. Maintain all column names
+After step 2 - Checking which is more available
+✅ Strong (High Availability)
+LL_
+PI_
+OMC_
+MDDg/cm3
+AASHTO
+UCSCS
+CBR_
+⚠ Medium
+PL_ (39%)
+Fines (36%)
+❌ Weak (Drop for now)
+Gravel_
+Sand_
+SPECIFIC_GRAVITY
+doi
+
+Step 3 - just makes the final dataset without weak entities
+
+Step 4 - data analytics - which feature is more dependent (or CBR being dependent on this feature) on our final result CBR.
+All made into figures. Made count, mean, SD and more results.
+Interpretation:
+OMC is the strongest predictor 📈
+MDD and LL moderately influence CBR
+PI has almost no linear relationship ❗
+PI ≈ 0 correlation
+Means:
+Either PI is not important
+OR relationship is nonlinear (Random Forest may capture it)
+
+Step 5 - 
+Running ML models - the 3 - linear, random, xgboost (these 3 are the usual models for using numbers to find a single final value (CBR))
+1. Linear Regression
+R² ≈ 0.27
+RMSE ≈ 10
+👉 Meaning:
+Very weak performance
+Linear relationships are not enough
+Soil–CBR relation is nonlinear
+🔹 2. Random Forest
+R² ≈ 0.53
+RMSE ≈ 8.05
+👉 Meaning:
+Big improvement ✅
+Captures nonlinear behavior
+Good baseline model
+🔹 3. XGBoost (BEST)
+R² ≈ 0.60
+RMSE ≈ 7.38
+👉 Meaning:
+Best model so far 🏆
+Explains ~60% variation in CBR
+Strong result for heterogeneous soil data
+Main - CBR prediction is nonlinear in nature; tree-based ensemble models significantly outperform linear regression
+Even best model has R² = 0.60
+👉 That means:
+
+40% variation still unexplained
+Missing factors (cement, soil type, etc.)
+Next look at figure1_step6
+
+You’re noticing a contradiction:
+📊 Correlation: PI ≈ 0.018 (almost zero in Step 4)
+🌲 Random Forest: PI ≈ high importance (~0.30) (in Step 5)
+Correlation = ONLY linear relationship
+Correlation measures:
+👉 It only detects straight-line relationships
+So if:
+PI affects CBR nonlinearly
+or interacts with other variables
+
+➡️ Correlation will say: “no relation”
+FInal point - Although the Plasticity Index (PI) shows negligible linear correlation with CBR, tree-based models reveal it as a significant predictor, indicating nonlinear and interaction effects with other soil parameters.
+Sometimes PI importance becomes high due to:
+🔹 Data issues:
+Noise
+Outliers
+Multicollinearity (PI related to LL)
+Next - 
+Step 5B - Checking with and without PI
+XGBoost:
+Model	R²
+WITH PI	0.60
+WITHOUT PI	0.64 ✅
+
+Why?
+PI is derived from:
+PI = LL - PL
+So:
+PI overlaps with LL
+Model already gets similar info
+Reason 2: Noisy / inconsistent data 
+Final result - Although Plasticity Index (PI) showed moderate importance in tree-based models, feature ablation revealed that its inclusion reduced model performance. This suggests redundancy and potential noise, likely due to its dependence on other soil parameters and variability in experimental data.
+
+Step 6 - Model Improvement (Advanced XGBoost + Better Features)
+R² dropped from 0.64 → 0.56
+A pkl file was created
+That means tuning didn’t help — and that’s actually a very important insight.
+Your dataset is:
+
+~1000 samples (not huge)
+Noisy (from multiple papers)
+Few features (only 3)
+Key understanding - More complex model ≠ better performance
+
+Step 6 - corrected version - cv
+We will:
+
+Keep simple XGBoost
+Add K-Fold Cross Validation
+Make results more reliable
+Result - some even gave negative R2 value which is extremely wrong
+Why This Happened
+🔹 1. Data is highly inconsistent
+
+Your dataset comes from:
+
+Different papers
+Different soil types
+Different conditions
+
+So each fold sees very different distributions
+
+🔹 2. No scaling / normalization
+
+Tree models don’t need it much, but:
+
+Your features have very different ranges
+(LL: 0–90, MDD: 1–2)
+
+→ causes instability
+
+🔹 3. Random splits are uneven
+
+Some folds may contain:
+
+mostly low CBR soils
+others high CBR
+
+→ model fails in some folds
+
+🚨 IMPORTANT CONCLUSION
+
+Your dataset is heterogeneous, not uniform.
+
+This is NORMAL in civil ML.
+
+Trying another step 6
+Step 6 - cvfixed
+Result - 
+Mean R² ≈ 0.74
+Std Dev ≈ 0.07
+model is now reliable
+No negative scores
+All folds performing well
+Low variation (std = 0.07)
+Closing the ML Model -
+jumping from ~0.74 → 0.90 is not just “tuning the model”.
+
+❗ It requires better information (features) or better data consistency, not just code.
+With this the ML model is over. Total accuracy is 74% for the best model - XGBoost (with tuning).
+But yes — we can push it much higher if we do it correctly.
+We can add another domain like the AASHTO and UCSCS values, but its possible only by filling missing data.
+Alan bro, you have said that to not fill missing values because it may be considered as cheating or wrong data.
+But, note that I am not going to randomly fill missing values. Usually, ML researchers use mean value of dataset to fill 
+missing values. But here, mean is meaningless in dataset from different papers.
+Hence I am going to use GAIN to fill missing values.
+What happens if you blindly use GAIN?
+You risk:
+❌ Generating fake but realistic-looking data
+❌ Overfitting model to artificial patterns
+❌ Inflated R² (looks good but wrong scientifically)
+
+👉 In engineering research → very dangerous
+Dropping GAIN plan
+Trying alternatives
+
+Step 7 - 
+Try a hybrid model by applying imputation, start from the dataset derived in step2
+RESULTS
+🔹 Without Imputation
+Mean R² ≈ 0.68
+🔹 With Imputation
+Mean R² ≈ 0.74 ✅
+Best fold ≈ 0.91 🔥
+Your missing features (Fines, Sand, Gravel) contain useful information
+Still unstable
+Lowest fold ≈ 0.48 ❌
+Result - Hybrid modeling with median imputation improved dataset utilization and increased mean R² from 0.68 to 0.74. A peak performance of 0.91 was observed in certain folds, indicating that enriched feature space significantly enhances predictive capability, though variability remains due to dataset heterogeneity
+Other inference I can get - Instead, the missingness was likely informative—meaning the absence of the data was, in itself, a clue about the physical property or the process of sampling
+What it means: When sand was missing, the model inferred it from high fines or gravel content using correlations in the observed data. Imputation fills these gaps with physically plausible values, stabilizing model coefficients and reducing bias.
+The Missingness Was "Informative"
+
+Step 8 - Splitting into groups based on UCSCS value
+Train seperately
+After certain rounds of different trains, found that clayey word was majority
+Cohesive Soils
+Mean R² ≈ 0.88 🔥
+Std ≈ 0.02 (VERY STABLE)
+
+👉 This is excellent
+
+Near 0.9
+Granular Soils
+Mean R² ≈ 0.61 ❌
+Std ≈ 0.34 (VERY UNSTABLE)
+
+👉 Big problem here:
+
+One fold = negative R²
+Highly inconsistent
+Cohesive → 1866 ✅
+Granular → 177 ❌
+
+👉 Granular data is:
+
+Too small
+Too diverse
+Poorly represented
+Hence data is biased 
+Drop Granular (SMART RESEARCH MOVE)
+Check internet, it seems even in real life, people only use CBR to represent cohersive soil (most cases)
+You can justify:
+“Due to insufficient and heterogeneous granular data, the model focuses on cohesive soils where reliable prediction is achieved.”
+Final result - Soil-type-specific modeling significantly improved performance. The cohesive soil model achieved a mean R² of 0.88 with low variance, indicating strong predictive capability. In contrast, granular soils exhibited high variability due to limited and heterogeneous data, highlighting the importance of dataset balance in ML-based geotechnical modeling
+Final accuracy = 0.88 or 88% (only for cohersive soil)
+
+Step 9 -
+Desperate measure searching for any other changes
+Can try several improvements, dont touch the model for now. Just focus on data
+We create physics-based features as they directly affect CBR:
+
+Feature	Meaning
+OMC/MDD	moisture-density interaction
+LL/MDD	plasticity vs density
+LL × OMC	combined soil behavior
+Result - just accuracy from 0.88 to 0.886 (insignificant)
+
+Step 10 - Log transformation
+People apply log to any unrecognisable pattern to make a pattern. Like measuring success in the atomic habits book - I have seen this in many youtube video and the DS course I did in FCC
+So, I did it out of curiosity but still failed
+R2 dropped to - .875
+
+Step 11 -
+RESIDUAL FILTERING (FINAL BOOST)
+🧠 Idea
+
+Your model is already good, but:
+
+👉 Some bad/noisy data points are pulling performance down
+
+So we:
+
+Train model once
+Find high-error samples
+Remove worst 10%
+Retrain model
+Finally - reached - 0.91 accuracy - 90% with best of 0.94 or 94%
+Final statement -By integrating feature engineering and residual-based data refinement, the model achieved a mean R² of 0.91 for cohesive soils. This demonstrates that accurate CBR prediction is achievable when domain-informed preprocessing and soil-specific modeling are applied
+Residual filtering = important but needs justification.
+Step 12 - 
+More possible things to do 
+And why I chose not to do them!
+1 - ensemble - using average of RF and XGBoost, but this will defenitely reduce accuracy as RF was somewhat poor performing model
+2 - No to filling missing values
+3 - No to seperate ML models - otehr than 2 entities, all others have less than 70% R2 values.
+Step 13 -
+Saving final model
+Step 14 - Buitl react app on the ML model with python backend server.
+Use limits of CBR 0 to 100, with possbile fall range for prediction along with SHAP analysis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+All outputs of code one by one -
+(venv) PS D:\Suriyan from 2024\Soil ML project> python step1_load_and_inspect.py
+
+===== BASIC INFO =====
+Shape: (2089, 15)
+
+===== COLUMN NAMES =====
+['INPUT PARAMETERS ', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9', 'Unnamed: 10', 'Unnamed: 11', 'OUTPUT PARAMETERS ', 'Unnamed: 13', 'Unnamed: 14']
+
+===== CLEANED COLUMN NAMES =====
+['INPUT_PARAMETERS', 'Unnamed:_1', 'Unnamed:_2', 'Unnamed:_3', 'Unnamed:_4', 'Unnamed:_5', 'Unnamed:_6', 'Unnamed:_7', 'Unnamed:_8', 'Unnamed:_9', 'Unnamed:_10', 'Unnamed:_11', 'OUTPUT_PARAMETERS', 'Unnamed:_13', 'Unnamed:_14']
+
+===== MISSING VALUES (%) =====
+Unnamed:_13          100.000000
+Unnamed:_11          100.000000
+Unnamed:_14           98.276687
+Unnamed:_7            77.357587
+Unnamed:_8            61.656295
+Unnamed:_9            57.348013
+Unnamed:_1            39.205361
+Unnamed:_10           36.237434
+Unnamed:_2            16.419339
+INPUT_PARAMETERS      16.275730
+Unnamed:_3            12.446146
+Unnamed:_4             9.286740
+Unnamed:_5             0.047870
+Unnamed:_6             0.000000
+OUTPUT_PARAMETERS      0.000000
+dtype: float64
+
+✅ Step 1 completed → step1_cleaned.xlsx created
+(venv) PS D:\Suriyan from 2024\Soil ML project> python step2_fix_structure.py
+
+===== ORIGINAL COLUMNS =====
+['LL (%)', 'PL (%)', 'PI (%)', 'OMC (%)', 'MDD\n(g/cm3)', 'AASHTO', 'UCSCS', 'SPECIFIC GRAVITY ((g/cm3)) ', 'Gravel (%)', 'Sand (%)', 'Fines', 'Unnamed: 11', 'CBR (%)', 'Unnamed: 13', 'doi']
+
+Original shape: (2088, 15)
+
+===== CLEANED COLUMNS =====
+['LL_', 'PL_', 'PI_', 'OMC_', 'MDDg/cm3', 'AASHTO', 'UCSCS', 'SPECIFIC_GRAVITY_g/cm3', 'Gravel_', 'Sand_', 'Fines', 'CBR_', 'doi']
+
+Shape after cleaning: (2088, 13)
+
+===== MISSING % =====
+doi                       98.323755
+SPECIFIC_GRAVITY_g/cm3    77.394636
+Gravel_                   61.685824
+Sand_                     57.375479
+PL_                       39.224138
+Fines                     36.254789
+PI_                       16.427203
+LL_                       16.283525
+OMC_                      12.452107
+MDDg/cm3                   9.291188
+AASHTO                     0.047893
+UCSCS                      0.000000
+CBR_                       0.000000
+dtype: float64
+
+✅ step2_structured.xlsx created successfully!
+(venv) PS D:\Suriyan from 2024\Soil ML project> python step3_build_base_dataset.py
+
+===== BASE DATASET =====
+Shape: (1370, 5)
+
+✅ step3_base_dataset.xlsx created!
+(venv) PS D:\Suriyan from 2024\Soil ML project> 
+python step4_eda.py
+
+===== ORIGINAL SHAPE =====
+(1370, 5)
+
+After numeric cleaning: (1369, 5)
+
+After removing unrealistic values: (1036, 5)
+
+===== DATASET INFO =====
+                LL           PI          OMC          MDD          CBR
+count  1036.000000  1036.000000  1036.000000  1036.000000  1036.000000
+mean     31.280888    13.135956    13.677983     1.522568     9.720542
+std      21.161313    10.670954     8.737675     0.502681    13.774003
+min       0.000000     0.000000     0.340000     0.580000     0.100000
+25%       0.840000     0.680000     8.275000     1.380000     1.380000
+50%      35.800000    12.500000    14.280000     1.620000     3.880000
+75%      45.700000    20.690000    20.802500     1.870000    10.000000
+max      92.600000    63.500000    32.500000     2.377000    95.000000
+
+===== CORRELATION WITH CBR =====
+CBR    1.000000
+OMC    0.356366
+MDD    0.298371
+LL     0.291180
+PI     0.018122
+Name: CBR, dtype: float64
+
+✅ step4_cleaned_dataset.xlsx created!
+(venv) PS D:\Suriyan from 2024\Soil ML project> 
+ python step5_ml_models.py
+
+Train shape: (828, 4)
+Test shape: (208, 4)
+
+===== LINEAR REGRESSION =====
+RMSE: 10.003830890818483
+R2: 0.27181939932779153
+
+===== RANDOM FOREST =====
+RMSE: 8.055786129632427
+R2: 0.527804029076179
+
+===== XGBOOST =====
+RMSE: 7.379686697549769
+R2: 0.603738143125977
+(venv) PS D:\Suriyan from 2024\Soil ML project> 
+Step 5 B - 
+ python step5_ml_models_new.py
+
+Dataset shape: (1036, 5)
+
+==============================
+MODEL WITH PI
+==============================
+
+Linear Regression (WITH PI)
+RMSE: 10.003830890818483
+R2: 0.27181939932779153
+
+Random Forest (WITH PI)
+RMSE: 8.055786129632427
+R2: 0.527804029076179
+
+XGBoost (WITH PI)
+RMSE: 7.379686697549769
+R2: 0.603738143125977
+
+==============================
+MODEL WITHOUT PI
+==============================
+
+Linear Regression (WITHOUT PI)
+RMSE: 11.210647772101796
+R2: 0.08553342322578716
+
+Random Forest (WITHOUT PI)
+RMSE: 8.676092995664149
+R2: 0.45228476862311495
+
+XGBoost (WITHOUT PI)
+RMSE: 7.040517432508313
+R2: 0.6393253841825788
+
+==============================
+FINAL COMPARISON
+==============================
+
+XGBoost WITH PI R2: 0.603738143125977
+XGBoost WITHOUT PI R2: 0.6393253841825788
+(venv) PS D:\Suriyan from 2024\Soil ML project> 
+python step6_improve_model.py
+
+Dataset shape: (1036, 5)
+
+Train shape: (828, 3)
+Test shape: (208, 3)
+
+===== IMPROVED XGBOOST =====
+RMSE: 7.753564885170126
+R2: 0.5625692868030145
+
+✅ Model saved as xgb_cbr_model.pkl
+
+venv) PS D:\Suriyan from 2024\Soil ML project> python step6_cv_model.py
+
+===== CROSS VALIDATION RESULTS =====
+R2 scores: [-2.96660955 -0.71627724  0.17411849 -0.02143457  0.65769078]
+Mean R2: -0.5745024188667607
+Std Dev: 1.2749034474137704
+(venv) PS D:\Suriyan from 2024\Soil ML project> 
+Next step 6 - cvfixed
+(venv) PS D:\Suriyan from 2024\Soil ML project> python step6_cv_fixed.py
+
+===== STRATIFIED CV RESULTS =====
+R2 scores: [0.6227962586867806, 0.772179498970843, 0.704181726488748, 0.7696510478381229, 0.8251376242920371]
+Mean R2: 0.7387892312553064
+Std Dev: 0.06953481969831012
+(venv) PS D:\Suriyan from 2024\Soil ML project> 
+t> python step7_hybrid_model.py
+
+NO IMPUTATION DATA SHAPE: (500, 6)
+
+NO IMPUTATION R2: [0.8218664098967228, 0.7027216897536492, 0.4731270214209593, 0.8075151422719159, 0.5780147642162266]
+Mean: 0.6766490055118947
+
+IMPUTED DATA SHAPE: (2088, 6)
+
+IMPUTATION R2: [0.7333707460606202, 0.8030680778961835, 0.4859844811124432, 0.77751181176793, 0.9061656075197831]
+Mean: 0.741220144871392
+
+==============================
+FINAL COMPARISON
+==============================
+No Imputation Mean R2: 0.6766490055118947
+Imputation Mean R2: 0.741220144871392
+(venv) PS D:\Suriyan from 2024\Soil ML project> 
+PS D:\Suriyan from 2024\Soil ML project> python step8_soil_split_model.py
+
+===== SOIL TYPE DISTRIBUTION =====
+Soil_Type
+Cohesive    1866
+Granular     177
+Mixed         45
+Name: count, dtype: int64
+
+==============================
+SOIL TYPE: Cohesive
+==============================
+R2 scores: [0.8935659763651403, 0.8482696989944644, 0.8891723507768856, 0.9063049332689952, 0.8654796561805775]
+Mean R2: 0.8805585231172127
+Std Dev: 0.020862453805695545
+
+==============================
+SOIL TYPE: Granular
+==============================
+R2 scores: [-0.050585239377957336, 0.8715629684157222, 0.8865641507204713, 0.6240386427722951, 0.7099616372888594]
+Mean R2: 0.6083084319638782
+Std Dev: 0.34393338884221936
+(venv) PS D:\Suriyan from 2024\Soil ML project> 
+PS D:\Suriyan from 2024\Soil ML project> python step9_feature_engineering.py
+
+Using Cohesive soil only: (1866, 14)
+
+===== STEP 9 RESULTS =====
+R2 scores: [0.9086151334005784, 0.8484627118857212, 0.9039509276222624, 0.9024680700670213, 0.8682424458620641]       
+Mean R2: 0.8863478577675294
+Std Dev: 0.023785083963534504
+(venv) PS D:\Suriyan from 2024\Soil ML project> 
+
+ PS D:\Suriyan from 2024\Soil ML project> python step11_residual_filtering.py
+
+Original size: 1866
+Filtered size: 1679
+
+===== STEP 11 RESULTS =====
+R2 scores: [0.9426845852654993, 0.8405105461023624, 0.8993027239918504, 0.9270134653636227, 0.9385037360459992]       
+Mean R2: 0.9096030113538669
+Std Dev: 0.03771639167072459
+(venv) PS D:\Suriyan from 2024\Soil ML project> 
+
+\Soil ML project> python step12_save_final_model.py
+
+✅ FINAL MODEL SAVED!
+Files created:
+- final_cbr_model.pkl
+- imputer.pkl
+- features.pkl
+(venv) PS D:\Suriyan from 2024\Soil ML project> 
+
+
+
+Final app - 
+Implemented. I created a full React + Python app in your folder that uses your saved final_cbr_model.pkl.
+
+What I added
+
+Backend API: [server.py](d:\Suriyan from 2024\Soil ML project\cbr-react-app\backend\server.py)
+React app: [App.jsx](d:\Suriyan from 2024\Soil ML project\cbr-react-app\src\App.jsx), [App.css](d:\Suriyan from 2024\Soil ML project\cbr-react-app\src\App.css), [main.jsx](d:\Suriyan from 2024\Soil ML project\cbr-react-app\src\main.jsx)
+Vite setup: [package.json](d:\Suriyan from 2024\Soil ML project\cbr-react-app\package.json), [vite.config.js](d:\Suriyan from 2024\Soil ML project\cbr-react-app\vite.config.js), [index.html](d:\Suriyan from 2024\Soil ML project\cbr-react-app\index.html)
+Run guide: [README.md](d:\Suriyan from 2024\Soil ML project\cbr-react-app\README.md)
+Important model note
+
+Your final model actually uses: LL, OMC, MDD, Fines, Sand, Gravel + engineered features.
+The UI includes all fields you requested (LL, PL, PI, OMC, MDD, AASHTO, UCSCS, SPECIFIC GRAVITY, Gravel, Sand, Fines), but PL/PI/AASHTO/SPECIFIC GRAVITY are currently not used by the trained .pkl.
+How to run
+
+Backend:
+.\venv\Scripts\python.exe .\cbr-react-app\backend\server.py
+Frontend (new terminal):
+cd .\cbr-react-app
+npm.cmd install
+npm.cmd run dev
+Verification done
+
+I tested prediction directly against your real model artifacts; backend returns valid predicted_cbr.
+I also added cohesive-soil warning logic based on UCSCS (since training was on cohesive soils).

@@ -1,0 +1,50 @@
+# Python virtual environment
+venv/
+.venv/
+env/
+
+# Python cache and build output
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+*.egg-info/
+
+# Jupyter / notebook checkpoints
+.ipynb_checkpoints/
+
+# Node / React dependencies and build output
+cbr-react-app/node_modules/
+cbr-react-app/dist/
+cbr-react-app/.vite/
+
+# Environment and local config
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+
+# Local temporary files
+*.tmp
+*.bak
+*.swp
+
+# Codex/local workspace metadata
+.sixth/
