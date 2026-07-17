@@ -206,7 +206,7 @@ class CBRRequestHandler(BaseHTTPRequestHandler):
             self._send_json(500, {"error": str(exc)})
 
 
-def run_server(host: str = "0.0.0.0", port: int = 8000) -> None:
+def run_server(host: str = "127.0.0.1", port: int = 8000) -> None:
     httpd = HTTPServer((host, port), CBRRequestHandler)
     print(f"CBR Predictor API running on http://{host}:{port}")
     httpd.serve_forever()
