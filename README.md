@@ -1,5 +1,6 @@
 # CBR Prediction Using Machine Learning
 
+
 A complete machine learning study for estimating the **California Bearing Ratio (CBR)** of soil from commonly available geotechnical index properties.
 
 The project includes:
@@ -549,5 +550,6 @@ Example payload:
 8. Log transformation did not improve the model.
 9. Residual filtering improved final reliability by reducing the effect of noisy multi-source samples.
 10. The final cohesive-soil model achieved approximately 91% R2.
-#   M L _ S t u d y _ o n _ C B R _ P r e d i c t i o n  
+#   M L _ S t u d y _ o n _ C B R _ P r e d i c t i o n 
+ 
  

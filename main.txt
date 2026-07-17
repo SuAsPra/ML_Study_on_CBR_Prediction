@@ -563,7 +563,7 @@ Files created:
 - features.pkl
 (venv) PS D:\Suriyan from 2024\Soil ML project> 
 
-
+Steo 12 forms the final model. However, it missed the PL value inclusion. So I made step 13 and 14 to repeat residual filtering and the final model save with PL.
 
 Final app - 
 Implemented. I created a full React + Python app in your folder that uses your saved final_cbr_model.pkl.
@@ -576,8 +576,8 @@ Vite setup: [package.json](d:\Suriyan from 2024\Soil ML project\cbr-react-app\pa
 Run guide: [README.md](d:\Suriyan from 2024\Soil ML project\cbr-react-app\README.md)
 Important model note
 
-Your final model actually uses: LL, OMC, MDD, Fines, Sand, Gravel + engineered features.
-The UI includes all fields you requested (LL, PL, PI, OMC, MDD, AASHTO, UCSCS, SPECIFIC GRAVITY, Gravel, Sand, Fines), but PL/PI/AASHTO/SPECIFIC GRAVITY are currently not used by the trained .pkl.
+Your final model actually uses: LL, PL, OMC, MDD, Fines, Sand, Gravel + engineered features.
+The UI includes all fields you requested (LL, PL, PI, OMC, MDD, AASHTO, UCSCS, SPECIFIC GRAVITY, Gravel, Sand, Fines), but PI/AASHTO/SPECIFIC GRAVITY are currently not used by the trained .pkl.
 How to run
 
 Backend:
