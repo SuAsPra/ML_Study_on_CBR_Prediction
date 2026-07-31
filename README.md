@@ -1,6 +1,5 @@
 # CBR Prediction Using Machine Learning
 
-
 A complete machine learning study for estimating the **California Bearing Ratio (CBR)** of soil from commonly available geotechnical index properties.
 
 The project includes:
